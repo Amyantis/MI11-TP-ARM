@@ -107,6 +107,8 @@ description : affiche la valeur de queue
 */
 
 void affic_queue(void) {
+  printf("Affichage de la queue:\n");
+
   char *format = "Queue:\t%d\tValeur:\t%d\n";
   printf(format, _queue, _file[_queue]);
 }
@@ -119,6 +121,8 @@ description : affiche les valeurs de la file
 */
 
 void affic_file(void) {
+  printf("Affichage de la file:\n");
+
   char *format = "Indice:\t%d\tValeur:\t%d\n";
   for (int i = 0; i < MAX_TACHES; i++) {
     printf(format, i, _file[i]);
