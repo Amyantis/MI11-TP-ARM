@@ -4,8 +4,7 @@
  *  la file est rangee dans un tableau. ce fichier decrit toutes            *
  *  les primitives de base                                                  *
  *--------------------------------------------------------------------------*/
-#include <stdint.h>
-#include <stdio.h>
+
 #include "serialio.h"
 #include "noyau.h"
 
@@ -48,7 +47,7 @@ void ajoute(uint16_t n) {
     _file[n] = suivant();
     _file[_queue] = n;
   } else {
-    fprintf(stderr, "Tâche déjà existante.");
+    printf("Error: Tâche déjà existante.");
   }
 
 }
@@ -64,7 +63,7 @@ description: sort la tache t de la file. L'ordre de la file n'est pas
 
 void retire(uint16_t t) {
   if (_file[t] == F_VIDE) {
-    fprintf(stderr, "Tâche inexistante.");
+    printf("Error: Tâche inexistante.");
   }
 
   uint16_t pred_t = predecesseur(t);
@@ -93,7 +92,7 @@ description : la tache a activer est sortie de la file. queue pointe la
 */
 uint16_t suivant(void) {
   if (_queue == F_VIDE) {
-    fprintf(stderr, "Aucune tâche.");
+    printf("Error: Aucune tâche.");
     return F_VIDE;
   } else {
     return _file[_queue];
