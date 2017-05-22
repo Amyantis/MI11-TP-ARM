@@ -46,7 +46,6 @@ void fin_tache(void) {
   _contexte[_tache_c].status = CREE;
   retire(_tache_c);
   schedule();
-
 }
 
 /*--------------------------------------------------------------------------*

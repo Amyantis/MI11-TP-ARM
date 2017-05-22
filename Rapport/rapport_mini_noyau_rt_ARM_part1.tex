@@ -15,7 +15,7 @@
 \lhead{Théophile DANCOISNE et Louis FRERET}
 \rfoot{Page \thepage}
 
-\usepackage{listings}
+\usepackage{listingsutf8}
 \usepackage{color}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
@@ -39,10 +39,13 @@
     showspaces=false,
     showstringspaces=false,
     showtabs=false,
-    tabsize=2
+    tabsize=2,
 }
 
-\lstset{style=mystyle}
+\lstset{
+    style=mystyle,
+    inputencoding=utf8/latin1
+}
 
 \title{TP MI11 - Réalisation d’un mini noyau temps réel ARM - Parties 1 et 2}
 \author{Théophile DANCOISNE et Louis FRERET}
@@ -52,13 +55,48 @@
 
 \maketitle
 
-Contexte d'un processus = image des registres du processus d'un instant t d'une exécution du processus.
-Un commutant la valeur du pointeur du registre du processeur, on effectue un changement de contexte.
+\section{Ordonnanceur de tâches}
+Rappel: Le contexte d'un processus est correspond à une image des registres du processus à un instant t. En commutant la valeur du pointeur du registre du processeur, on effectue un changement de contexte.
 
-\lstinputlisting[language=C]{../noyau.c}
+\lstinputlisting[language=C, caption=noyaufil.c]{../Distribuable/noyaufil.c}
+L'ordonnancement ainsi implémenté est le plus simple du monde: chaque tâche est exécuté tour à tour sans priorité en respectant l'ordre défini par l'utilisateur.
 
-\begin{lstlisting}[language=bash]
-  echo "hello world
+\lstinputlisting[language=C, caption=testfile.c]{../testfile.c}
+
+\section{Gestion et commutation de tâches}
+A chaque fois que l'on effectue un changement de contexte, il faut désactiver les interruptions pour éviter 1. de perdre le contexte du processus en cours d'exécution 2. d'entrer dans un état incohérent où 2 processus auraient l'état running.
+
+\begin{lstlisting}[language=C, caption=noyau.c]
+void noyau_exit(void) {
+  int j;
+  _irq_disable_();                /* D?sactiver les interruptions */
+  printf("Sortie du noyau\n");
+  for (j = 0; j < MAX_TACHES; j++)
+    printf("\nActivations tache %d : %d", j, compteurs[j]);
+  for (;;);                        /* Terminer l'ex?cution */
+}
 \end{lstlisting}
+
+\begin{lstlisting}[language=C, caption=noyau.c]
+void fin_tache(void) {
+  /* on interdit les interruptions */
+  _irq_disable_();
+  /* la tache est enlevee de la file des taches */
+  _contexte[_tache_c].status = CREE;
+  retire(_tache_c);
+  schedule();
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=C, caption=noyau.c]
+\end{lstlisting}
+
+\begin{lstlisting}[language=C, caption=noyau.c]
+\end{lstlisting}
+
+\begin{lstlisting}[language=C, caption=noyau.c]
+\end{lstlisting}
+
+
 
 \end{document}
