@@ -1,1 +1,0 @@
-"arm-linux-gnueabihf-gcc;-mfloat-abi=hard"  -g   CMakeFiles/TESTFILE.dir/TESTFILE.c.o CMakeFiles/TESTFILE.dir/noyau.c.o  -o TESTFILE 

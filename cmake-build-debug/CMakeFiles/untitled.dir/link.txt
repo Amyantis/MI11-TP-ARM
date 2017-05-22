@@ -1,1 +1,0 @@
-/usr/bin/cc  -g   CMakeFiles/untitled.dir/TESTFILE.c.o CMakeFiles/untitled.dir/noyau.c.o  -o untitled 
