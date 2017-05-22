@@ -5,6 +5,7 @@
  *  les primitives de base                                                  *
  *--------------------------------------------------------------------------*/
 #include <stdint.h>
+#include <stdio.h>
 #include "serialio.h"
 #include "noyau.h"
 
@@ -25,7 +26,10 @@ description : la queue est initialisee vide, queue prend la valeur de tache
 */
 
 void file_init(void) {
-
+  _queue = F_VIDE;
+  for (int i = 0; i < MAX_TACHES; i++) {
+    _file[i] = F_VIDE;
+  }
 }
 
 /*        ajouter une tache dans la pile      *
@@ -36,9 +40,20 @@ description : ajoute la tache n en fin de pile
 */
 
 void ajoute(uint16_t n) {
+  if (_queue == F_VIDE) {
+    _file[n] = n;
+  }
+
+  if (_file[n] == F_VIDE) {
+    _file[n] = suivant();
+    _file[_queue] = n;
+  } else {
+    fprintf(stderr, "Tâche déjà existante.");
+  }
 
 }
 
+uint16_t predecesseur(uint16_t t);
 /*           retire une tache de la file        *
  *----------------------------------------------*
 entree : t numero de la tache a sortir
@@ -48,7 +63,25 @@ description: sort la tache t de la file. L'ordre de la file n'est pas
 */
 
 void retire(uint16_t t) {
+  if (_file[t] == F_VIDE) {
+    fprintf(stderr, "Tâche inexistante.");
+  }
 
+  uint16_t pred_t = predecesseur(t);
+  _file[pred_t] = _file[t];
+
+  _file[t] = F_VIDE;
+}
+
+uint16_t predecesseur(uint16_t t) {
+  uint16_t pred_t;
+  for (int i = 0; i < MAX_TACHES; i++) {
+    if (_file[i] == t) {
+      pred_t = i;
+      break;
+    }
+  }
+  return pred_t;
 }
 
 /*        recherche du suivant a executer       *
@@ -59,7 +92,12 @@ description : la tache a activer est sortie de la file. queue pointe la
 	      suivante
 */
 uint16_t suivant(void) {
-
+  if (_queue == F_VIDE) {
+    fprintf(stderr, "Aucune tâche.");
+    return F_VIDE;
+  } else {
+    return _file[_queue];
+  }
 }
 
 /*     affichage du dernier element     *
@@ -70,7 +108,7 @@ description : affiche la valeur de queue
 */
 
 void affic_queue(void) {
-
+  printf()
 }
 
 /*     affichage de la file     *

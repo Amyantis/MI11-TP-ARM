@@ -19,5 +19,5 @@ set(CMAKE_C_STANDARD 11)
 
 include_directories(Distribuable)
 
-set(SOURCE_FILES TESTFILE.c noyau.c)
+set(SOURCE_FILES testfile.c noyau.c Distribuable/noyaufil.c)
 add_executable(TESTFILE ${SOURCE_FILES})
