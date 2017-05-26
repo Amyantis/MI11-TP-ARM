@@ -77,5 +77,7 @@ dkms.conf
 *.mtc1
 *.out
 *.synctex.gz
+*.fdb_latexmk
+*.fls
 
 cmake-build-debug

@@ -66,17 +66,28 @@ L'ordonnancement ainsi implémenté est le plus simple du monde: chaque tâche e
 \section{Gestion et commutation de tâches}
 A chaque fois que l'on effectue un changement de contexte, il faut désactiver les interruptions pour éviter 1. de perdre le contexte du processus en cours d'exécution 2. d'entrer dans un état incohérent où 2 processus auraient l'état running.
 
+Nous allons à présent décrire les différentes fonctions de l'ordonnanceur, implémentées dans le fichier \textit{noyau.c}. Des primitives dépendant du matériel préalablement définies dans le fichier \textit{noyau.h} ont été utilisées.
+
+\subsection{Sortie du noyau}
+Pour cette procédure, il suffit de désactiver les interruptions en faisant appel à la primitive \textit{\_irq\_disable\_} puis éventuellement d'afficher le nombre d'exécution de chaque tâche.
 \begin{lstlisting}[language=C, caption=noyau.c]
 void noyau_exit(void) {
   int j;
-  _irq_disable_();                /* D?sactiver les interruptions */
+  _irq_disable_();                /* Désactiver les interruptions */
   printf("Sortie du noyau\n");
   for (j = 0; j < MAX_TACHES; j++)
     printf("\nActivations tache %d : %d", j, compteurs[j]);
-  for (;;);                        /* Terminer l'ex?cution */
+  for (;;);                        /* Terminer l'exécution */
 }
 \end{lstlisting}
 
+\subsection{Destruction d'une tâche}
+La destruction d'une tâche s'effectue en 3 étapes après avoir préalablement désactiver les interruptions:
+\begin{itemize}
+    \item Changer l"état de la tâche à celui de CREE, c'est à dire connue du noyau avec une pile allouée et un identifiant.
+    \item Sortir la tâche de la file
+    \item Appeler le gestionnaire de tâches (\textit{sheduler}).
+\end{itemize}
 \begin{lstlisting}[language=C, caption=noyau.c]
 void fin_tache(void) {
   /* on interdit les interruptions */
@@ -88,15 +99,243 @@ void fin_tache(void) {
 }
 \end{lstlisting}
 
+\subsection{Créer une nouvelle tâche}
+Le rôle de cette fonction est "d"allouer un espace dans la pile à la tâche et lui attribue un identifiant, qui est retourné à l’appelant".
+
+Les opération de création du contexte, d'allocation d'une pile et décrémentation du pointeur de pile pour la nouvelle tâche doivent bien entendu être effectués en section critique. Les primitives utilisées à cet effet sont \textit{\_lock\_} et \textit{\_unlock\_}. Si le nombre de tâche est maximal, alors on sort du noyau pour cause de dépassement. Le contexte de la nouvelle tâche est récupéré via un le tableau des contextes. L'initialisation du contexte de la tâche se réalise en affectant l'adresse du sommet de la pile, auquel on accède par la variable \textit{\_tos}, au pointeur de pile initial du contexte (\textit{sp\_init}). Il faut alors bien entendu mettre à jour l'adresse du sommet de la pile en le décrémentant de $PILE\_TACHE + PILE\_IRQ$, c'est-à-dire la taille max de la pile d'une tâche plus la taille max de la pile IRQ par tâche.
+Enfin, il faut mémoriser l'adresse du début de la tâche et changer son état à CREER.
 \begin{lstlisting}[language=C, caption=noyau.c]
+uint16_t cree(TACHE_ADR adr_tache) {
+    /* pointeur d'une case de _contexte */
+    CONTEXTE *p;
+    /* contient numero dernier cree */
+    static uint16_t tache = -1;
+
+
+    /* debut section critique */
+    _lock_();
+    /* numero de tache suivant */
+    tache++;
+
+    /* sortie si depassement */
+    if (tache >= MAX_TACHES)
+        noyau_exit();
+
+    /* contexte de la nouvelle tache */
+    p = &_contexte[tache];
+
+    /* allocation d'une pile a la tache */
+    p->sp_ini = _tos;
+    /* decrementation du pointeur de pile pour*/
+    /* la prochaine tache. */
+    _tos -= PILE_TACHE + PILE_IRQ;
+
+
+    /* fin section critique */
+    _unlock_();
+
+    /* memorisation adresse debut de tache */
+    p->tache_adr = adr_tache;
+    /* mise a l'etat CREE */
+    p->status = CREE;
+    /* tache est un uint16_t */
+    return (tache);
+}
 \end{lstlisting}
 
+\subsection{Activer une tâche}
+Cette fonction place la tâche dans la file des tâches prêtes.
+Un test préalable doit être effectué pour vérifier que la tâche a bien été créée. Si ce n'est pas le cas, on sort du noyau. Si la tâche est bien a l'état CREE, après être entré en section critique, on effectue les 3 opérations suivantes:
+\begin{itemize}
+    \item Changer le statut de la tâche à prêt.
+    \item Ajouter la tâche dans la liste.
+    \item Activer une tâche prête en faisant appel au scheduler.
+\end{itemize}
 \begin{lstlisting}[language=C, caption=noyau.c]
+void active(uint16_t tache) {
+    /* acces au contexte tache */
+    CONTEXTE *p = &_contexte[tache];
+
+    if (p->status == NCREE)
+        /* sortie du noyau */
+        noyau_exit();
+
+    /* debut section critique */
+    _lock_();
+    /* n'active que si receptif */
+    if (p->status == CREE) {
+        /* changement d'etat, mise a l'etat PRET */
+        p->status = PRET;
+        /* ajouter la tache dans la liste */
+        ajoute(tache);
+        /* activation d'une tache prete */
+        schedule();
+    }
+    /* fin section critique */
+    _unlock_();
+}
 \end{lstlisting}
 
+\subsection{Appel au gestionnaire de tâches}
+L'appel au gestionnaire de tâches s'effectue par l'appel à la fonction \textit{schedule}, qui effectuera un branchement (un saut en assembleur) sur \textit{scheduler}.
+Bien entendu, toute la procédure doit s'exécuter en section critique. Le flag indiquant qu'il faut acquitter le timer est paramétré à "faux". On entre alors en mode IRQ à l'aide de la primitive \textit{\_set\_arm\_mode\_}. Le branchement est alors fait sur le cœur de l'ordonnancement. Une fois son traitement accomplie, on replace en mode système avec \textit{\_set\_arm\_mode\_} puis l'on sort de la section critique.
+Décrivons précisément la communication de contexte. La première étape consiste à mémoriser le contexte de la tâche en cours en sauvegardant le pointeur de pile dans le champ \textit{sq\_irq}. Via la fonction \textit{suivant}, définie précédemment dans \textit{noyaufil.c}, on récupère le numéro de la tâche suivante à exécuter. S'il n'y a plus rien à ordonnancer, on sort du noyau. On incrémente alors le compteur d'activation de la tâche suivante, indiquant le nombre de fois on l'on a commuté sur la tâche. Puis si son statut est à prêt, on charge sont pointeur de pile initial \textit{sp\_ini} et l'on passe en mode système. Via l'opération dans $sp\_ini - PILE\_IRQ$, on charge le pointeur de pile courant en mode système. On change alors le statut de la tâche à EXEC, c'est-à-dire en possession du processeur. On autorise alors les interruptions et on lance la tâche. On restaure alors le contexte complet depuis la pile IRQ.
 \begin{lstlisting}[language=C, caption=noyau.c]
+void __attribute__((naked)) scheduler(void) {
+    register CONTEXTE *p;
+    /* Pointeur de pile */
+    register unsigned int sp asm("sp");
+
+    /* Sauvegarder le contexte complet sur la pile IRQ */
+
+    __asm__ __volatile__(
+    /* Sauvegarde registres mode system */
+            "stmfd  sp, {r0-r14}^\t\n"
+            /* Attendre un cycle */
+            "nop\t\n"
+            /* Ajustement pointeur de pile */
+            "sub    sp, sp, #60\t\n"
+            /* Sauvegarde de spsr_irq */
+            "mrs    r0, spsr\t\n"
+            /* et de lr_irq */
+            "stmfd  sp!, {r0, lr}\t\n");
+
+    /* Reinitialiser le timer si necessaire */
+    if (_ack_timer) {
+        register struct imx_timer *tim1 = (struct imx_timer *) TIMER1_BASE;
+        tim1->tstat &= ~TSTAT_COMP;
+    } else {
+        _ack_timer = 1;
+    }
+
+    /* memoriser le pointeur de pile */
+    _contexte[_tache_c].sp_irq = sp;
+    /* recherche du suivant */
+    _tache_c = suivant();
+    if (_tache_c == F_VIDE) {
+        printf("Plus rien à ordonnancer.\n");
+        /* Sortie du noyau */
+        noyau_exit();
+    }
+    /* Incrementer le compteur d'activations  */
+    compteurs[_tache_c]++;
+    /* p pointe sur la nouvelle tache courante*/
+    p = &_contexte[_tache_c];
+
+    /* tache prete ? */
+    if (p->status == PRET) {
+        /* Charger sp_irq initial */
+        sp = p->sp_ini;
+        /* Passer en mode syst?me */
+        _set_arm_mode_(ARMMODE_SYS);
+        /* Charger sp_sys initial */
+        sp = p->sp_ini - PILE_IRQ;
+        /* status tache -> execution */
+        p->status = EXEC;
+        /* autoriser les interuptions   */
+        _irq_enable_();
+        /* lancement de la tache */
+        /* lancement de la tache */
+        (*p->tache_adr)();
+    } else {
+        /* tache deja en execution, restaurer sp_irq */
+        sp = p->sp_irq;
+    }
+
+    /* Restaurer le contexte complet depuis la pile IRQ */
+
+    __asm__ __volatile__(
+    /* Restaurer lr_irq */
+            "ldmfd  sp!, {r0, lr}\t\n"
+            /* et spsr_irq */
+            "msr    spsr, r0\t\n"
+            /* Restaurer registres mode system */
+            "ldmfd  sp, {r0-r14}^\t\n"
+            /* Attendre un cycle */
+            "nop\t\n"
+            /* Ajuster pointeur de pile irq */
+            "add    sp, sp, #60\t\n"
+            /* Retour d'exception */
+            "subs   pc, lr, #4\t\n");
+}
+void schedule(void) {
+    /* Debut section critique */
+    _lock_();
+
+    /* On simule une exception irq pour forcer un appel correct a scheduler().*/
+
+    _ack_timer = 0;
+    /* Passer en mode IRQ */
+    _set_arm_mode_(ARMMODE_IRQ);
+    __asm__ __volatile__(
+    /* Sauvegarder cpsr dans spsr */
+    "mrs  r0, cpsr\t\n"
+            "msr  spsr, r0\t\n"
+            /* Sauvegarder pc dans lr et l'ajuster */
+            "add  lr, pc, #4\t\n"
+            /* Saut à scheduler */
+            "b    scheduler\t\n"
+    );
+    /* Repasser en mode system */
+    _set_arm_mode_(ARMMODE_SYS);
+
+    /* Fin section critique */
+    _unlock_();
+}
 \end{lstlisting}
 
 
+
+\subsection{Démarrer le noyau et commencer une première tâche}
+Cette fonction "initialise les structures de données du noyau, met en place le gestionnaire d’interruption scheduler" et "crée et active la première tâche, dont l’adresse est passée en paramètres".
+La première étape consiste en l'initialisation de l'état des tâches, en paramétrant l'état des tâches à NCREE. On initialise ensuite la tâche courante ainsi que la file, par un appel à \textit{file\_init}. L'adresse du sommet de la pile, \textit{\_tos} est ensuite initialisée à la valeur de sp, c'est-à-dire de la pile. En mode IRQ, on paramètre \textit{sp\_irq} à \textit{\_tos}; et l'on repasse en mode système. Après avoir désactivé les interruptions, on initialise le timer, de type \textit{imx\_timer} à $100Hz$: tcmp, la fréquence de l'ordonnanceur, est ainsi paramétrée à $10000$. On créé alors une première tâche et on l'active.
+\begin{lstlisting}[language=C, caption=noyau.c]
+void start(TACHE_ADR adr_tache) {
+    short j;
+    register unsigned int sp asm("sp");
+    struct imx_timer *tim1 = (struct imx_timer *) TIMER1_BASE;
+    struct imx_aitc *aitc = (struct imx_aitc *) AITC_BASE;
+
+    for (j = 0; j < MAX_TACHES; j++) {
+        /* initialisation de l'etat des taches */
+        _contexte[j].status = NCREE;
+    }
+    /* initialisation de la tache courante */
+    _tache_c = 0;
+    /* initialisation de la file           */
+    file_init();
+
+    /* Haut de la pile des taches */
+    _tos = sp;
+    /* Passer en mode IRQ */
+    _set_arm_mode_(ARMMODE_IRQ);
+    /* sp_irq initial */
+    sp = _tos;
+    /* Repasser en mode SYS */
+    _set_arm_mode_(ARMMODE_SYS);
+
+    /* on interdit les interruptions */
+    _irq_disable_();
+
+    /* Initialisation du timer à 100 Hz */
+
+    tim1->tcmp = 10000;
+    tim1->tprer = 0;
+    tim1->tctl |= TCTL_TEN | TCTL_IRQEN | TCTL_CLKSOURCE_PERCLK16;
+
+    /* Initialisation de l'AITC */
+
+    aitc->intennum = TIMER1_INT;
+
+    /* creation et activation premiere tache */
+    active(cree(adr_tache));
+}
+\end{lstlisting}
+
+\subsection{Endormir la tâche courante}
+Le rôle de cette fonction est d'endormir la tâche courante et d'attribuer le processeur à la suivante.
+
+\subsection{Réveille une tâche}
+Cette fonction réveille une tâche.
 
 \end{document}
