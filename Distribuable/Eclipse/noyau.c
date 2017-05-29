@@ -307,7 +307,8 @@ void start(TACHE_ADR adr_tache) {
  *-------------------------------------------------------------------------*/
 
 void dort(void) {
-
+    _contexte[_tache_c].status = SUSP;
+    schedule();
 }
 
 /*-------------------------------------------------------------------------*
@@ -322,6 +323,10 @@ void dort(void) {
 
 
 void reveille(uint16_t t) {
-    CONTEXTE *p;
-
+    CONTEXTE *p = &_contexte[t];
+    if (p->status == SUSP)
+    {
+        p->status = PRET;
+        active(t);
+    }
 }
