@@ -20,6 +20,7 @@ TACHE tacheA(void) {
   active(cree(tacheB));
   active(cree(tacheC));
   active(cree(tacheD));
+
   fin_tache();
 }
 
@@ -58,9 +59,9 @@ TACHE tacheD(void) {
 
 int main() {
   serial_init(115200);
+  puts("\n");puts("\n");puts("\n");
+  puts("Test noyau preemptif");
 
-  puts("Test noyau");
-  puts("Noyau preemptif");
   start(tacheA);
   getchar();
   return (0);

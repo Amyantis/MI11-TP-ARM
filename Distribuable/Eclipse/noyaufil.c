@@ -69,6 +69,10 @@ void retire(uint16_t t) {
     printf("Error: Tâche inexistante.\n");
   }
 
+  if(_queue == t) {
+	  _queue = _file[t];
+  }
+
   uint16_t pred_t = predecesseur(t);
   _file[pred_t] = _file[t];
 
@@ -79,11 +83,9 @@ uint16_t predecesseur(uint16_t t) {
   uint16_t pred_t;
   for (int i = 0; i < MAX_TACHES; i++) {
     if (_file[i] == t) {
-      pred_t = i;
-      break;
+	  return i;
     }
   }
-  return pred_t;
 }
 
 /*        recherche du suivant a executer       *
@@ -98,7 +100,9 @@ uint16_t suivant(void) {
     printf("Error: Aucune tâche.");
     return F_VIDE;
   } else {
-    return _file[_queue];
+	uint16_t suivant = _file[_queue];
+	_queue = suivant;
+    return suivant;
   }
 }
 
