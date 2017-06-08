@@ -4,8 +4,6 @@
  *                                 NOYAU.C                                  *
  *--------------------------------------------------------------------------*/
 
-#include <stdint.h>
-
 #include "serialio.h"
 #include "imx_timers.h"
 #include "imx_aitc.h"
@@ -136,6 +134,8 @@ void active(uint16_t tache) {
  *  commutation !!                                                          *
  *--------------------------------------------------------------------------*/
 void __attribute__((naked)) scheduler(void) {
+    //printf("Appel à scheduler.\n\n");
+
     register CONTEXTE *p;
     /* Pointeur de pile */
     register unsigned int sp asm("sp");

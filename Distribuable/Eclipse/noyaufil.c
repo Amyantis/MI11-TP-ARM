@@ -45,11 +45,13 @@ void ajoute(uint16_t n) {
 	printf("Error: Tâche déjà existante.\n");
 	return;
   }
-
+  if (_queue == F_VIDE) {
+	  _file[n] = n;
+  } else {
+	  _file[n] = _file[_queue];
+	  _file[_queue] = n;
+  }
   _queue = n;
-  _file[n] = n;
-
-  printf("Nouvelle queue:\t%d\n\n", _queue);
 }
 
 uint16_t predecesseur(uint16_t t);
@@ -62,6 +64,7 @@ description: sort la tache t de la file. L'ordre de la file n'est pas
 */
 
 void retire(uint16_t t) {
+  printf("retire(%d)\n", t);
   if (_file[t] == F_VIDE) {
     printf("Error: Tâche inexistante.\n");
   }
