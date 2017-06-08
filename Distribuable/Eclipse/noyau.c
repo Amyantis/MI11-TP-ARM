@@ -41,7 +41,7 @@ void fin_tache(void) {
     /* on interdit les interruptions */
     _irq_disable_();
     /* la tache est enlevee de la file des taches */
-    _contexte[_tache_c].status = CREE;
+    _contexte[_tache_c].status = NCREE;
     retire(_tache_c);
     schedule();
 }

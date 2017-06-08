@@ -29,7 +29,7 @@ int pop_fifo(FIFO* f)
 	if(empty_fifo(f))
 		return 0;
 
-    f->head = (f->head + 1) % MAX_FILE;
+    f->head = (f->head + 1) % MAX_FIFO;
     f->size = f->size - 1;
     return 1;
 }

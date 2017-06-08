@@ -15,9 +15,9 @@ void s_init()
 	}
 }
 
-ushort s_cree(short v)
+short s_cree(short v)
 {
-	ushort i = 0;
+	short i = 0;
 	while(i < MAX_SEM || _sem_libre[i] == 0) ++i;
 	if(i < MAX_SEM)
 	{
@@ -28,13 +28,14 @@ ushort s_cree(short v)
 	return i;
 }
 
-void s_close(ushort n)
+void s_close(short n)
 {
 	_sem_libre[n] = 1;
 }
 
-void s_wait(ushort n)
+void s_wait(short n)
 {
+	_lock_();
 	if(_sem[n].valeur <= 0)
 	{
 		push_fifo(&_sem[n].file, _tache_c);
@@ -44,10 +45,12 @@ void s_wait(ushort n)
 	{
 		_sem[n].valeur = _sem[n].valeur - 1;
 	}
+	_unlock_();
 }
 
-void s_signal(ushort n)
+void s_signal(short n)
 {
+	_lock_();
 	int i, wokeup = 0;
 	for (i = 0; i < MAX_FIFO; ++i)
 	{
@@ -60,4 +63,5 @@ void s_signal(ushort n)
 		}
 	}
 	if(wokeup == 0) _sem[n].valeur = _sem[n].valeur + 1;
+	_unlock_();
 }

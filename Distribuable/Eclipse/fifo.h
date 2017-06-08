@@ -7,6 +7,9 @@
  * necessaires au fonctionnement du noyau
  *--------------------------------------------------------------------------*/
 
+#ifndef __FIFO_H__
+#define __FIFO_H__
+
 #define MAX_FIFO 8
 
 typedef struct FIFO
@@ -18,8 +21,10 @@ typedef struct FIFO
 } FIFO;
 
 void init_fifo(FIFO* f);
-void push_fifo(FIFO* f, int v);
-void pop_fifo(FIFO* f);
-int top_fifo(FIFO* f);
+int push_fifo(FIFO* f, int v);
+int pop_fifo(FIFO* f);
+int top_fifo(FIFO* f);	
 int size_fifo(FIFO* f);
 int empty_fifo(FIFO* f);
+
+#endif

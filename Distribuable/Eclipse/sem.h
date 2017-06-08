@@ -7,6 +7,10 @@
  * necessaires au fonctionnement du noyau
  *--------------------------------------------------------------------------*/
 
+#ifndef __SEM_H__
+#define __SEM_H__
+
+#include <stdint.h>
 #include "fifo.h"
 
 #define MAX_SEM 8
@@ -17,10 +21,12 @@ typedef struct {
 } SEMAPHORE;
 
 SEMAPHORE _sem[MAX_SEM];
-ushort _sem_libre[MAX_SEM];
+short _sem_libre[MAX_SEM];
 
 void s_init();
-ushort s_cree(short v);
-void s_close(ushort n);
-void s_wait(ushort n);
-void s_signal(ushort n);
+short s_cree(short v);
+void s_close(short n);
+void s_wait(short n);
+void s_signal(short n);
+
+#endif
