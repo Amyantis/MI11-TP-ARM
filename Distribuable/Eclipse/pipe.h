@@ -17,11 +17,10 @@
 // 	ushort pr_w , pr_r ;		/* redacteur & lecteur du tube */
 // 	ushort ocupp ;				/* donnees restantes */
 // 	uchar is, ie ;				/* pointeurs d’entree / sortie */
-// 	uchar tube[SIZE_PIPE] ;		/* Tampon */
+// 	uchar tube[SIZE_PIPE];		/* Tampon */
 // } PIPE;
 
 // PIPE _pipe[MAX_PIPES] ; 		/* Variables tubes */
-// short _pipe_libre[MAX_PIPES];	/* Pipes libres */
 
 // void p_init();
 // unsigned p_open(unsigned redacteur, unsigned lecteur);
