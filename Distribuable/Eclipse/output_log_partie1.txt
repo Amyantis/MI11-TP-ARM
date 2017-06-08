@@ -1,0 +1,62 @@
+/home/mi11p002/mi11vm/Documents/MI11-TP-ARM/Distribuable/noyautes.c
+
+Appel à file_init
+ajoute(3)
+ajoute(5)
+ajoute(1)
+ajoute(0)
+ajoute(2)
+Affichage de la file:
+Indice: 0       Valeur: 2
+Indice: 1       Valeur: 0
+Indice: 2       Valeur: 3
+Indice: 3       Valeur: 5
+Indice: 4       Valeur: 8
+Indice: 5       Valeur: 1
+Indice: 6       Valeur: 8
+Indice: 7       Valeur: 8
+
+Affichage de la queue:
+Queue:  2       Valeur: 3
+
+Tâche suivante: 3
+
+Affichage de la file:
+Indice: 0       Valeur: 2
+Indice: 1       Valeur: 0
+Indice: 2       Valeur: 3
+Indice: 3       Valeur: 5
+Indice: 4       Valeur: 8
+Indice: 5       Valeur: 1
+Indice: 6       Valeur: 8
+Indice: 7       Valeur: 8
+
+Affichage de la queue:
+Queue:  2       Valeur: 3
+
+Affichage de la file:
+Indice: 0       Valeur: 8
+Indice: 1       Valeur: 2
+Indice: 2       Valeur: 3
+Indice: 3       Valeur: 5
+Indice: 4       Valeur: 8
+Indice: 5       Valeur: 1
+Indice: 6       Valeur: 8
+Indice: 7       Valeur: 8
+
+Affichage de la queue:
+Queue:  2       Valeur: 3
+
+ajoute(6)
+Affichage de la file:
+Indice: 0       Valeur: 8
+Indice: 1       Valeur: 2
+Indice: 2       Valeur: 6
+Indice: 3       Valeur: 5
+Indice: 4       Valeur: 8
+Indice: 5       Valeur: 1
+Indice: 6       Valeur: 3
+Indice: 7       Valeur: 8
+
+Affichage de la queue:
+Queue:  6       Valeur: 3
