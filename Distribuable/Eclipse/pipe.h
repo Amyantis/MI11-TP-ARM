@@ -24,10 +24,19 @@ typedef struct {
 
 PIPE _pipe[MAX_PIPES] ; 		/* Variables tubes */
 
+// Initialise les pipes
 void p_init();
+
+// Ouvre un pipe à deux tâches
 unsigned p_open(unsigned redacteur, unsigned lecteur);
+
+// Ferme un pipe
 void p_close (unsigned conduit);
+
+// Lecture bloquante d'une donnée dans le pipe
 void p_read (unsigned conduit, char* donnees, unsigned nb);
+
+// Ecriture bloquante d'une donnée dans le pipe
 void p_write(unsigned conduit, char* donnees, unsigned nb);
 
 #endif

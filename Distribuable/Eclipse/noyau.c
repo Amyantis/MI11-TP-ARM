@@ -307,13 +307,19 @@ void start(TACHE_ADR adr_tache) {
  *-------------------------------------------------------------------------*/
 
 void dort(void) {
-    _contexte[_tache_c].status = SUSP;
-    
+    // Entrée en section critique
     _lock_();
     
+    // Changement de statut de la tâche
+    _contexte[_tache_c].status = SUSP;
+
+    // On retire la tâche de la liste du scheduler
     retire(_tache_c);
+
+    // On interromp la tâche actuelle pour passer à la suivante
     schedule();
     
+    // Fin de section critique
     _unlock_();
 }
 
@@ -329,15 +335,22 @@ void dort(void) {
 
 
 void reveille(uint16_t t) {
+    // Récupération du contexte associée à la tâche
     CONTEXTE *p = &_contexte[t];
+
+    // Si la tâche est suspendue
     if (p->status == SUSP)
     {
+        // Entrée en section critique
         _lock_();
 
+        // La tâche est en exécution
         p->status = EXEC;
-        ajoute(t);
-        //schedule();
 
+        // La tâche est ajoutée dans la liste du scheduler
+        ajoute(t);
+
+        // Sortie de section critique
         _unlock_();
     }
 }
