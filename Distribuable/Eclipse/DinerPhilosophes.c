@@ -3,7 +3,7 @@
 #include "noyau.h"
 #include "sem.h"
 
-#define NB_PHILOSOPHES = 5
+#define NB_PHILOSOPHES 5
 
 void comportement_philosophe(int id_philosophe);
 
@@ -32,7 +32,7 @@ TACHE launch(void) {
 
   int i;
   for (i = 0; i < NB_PHILOSOPHES; i++) {
-    fourchettes[i].mutex = s_cree(1);
+    fourchettes[i]->mutex = s_cree(1);
   }
 
   active(cree(tache_philosophe0));
@@ -44,27 +44,27 @@ TACHE launch(void) {
   fin_tache();
 }
 
-TACHE tache_philosophe_0(void) {
+TACHE tache_philosophe0(void) {
   comportement_philosophe(0);
   fin_tache();
 }
 
-TACHE tache_philosophe_1(void) {
+TACHE tache_philosophe1(void) {
   comportement_philosophe(1);
   fin_tache();
 }
 
-TACHE tache_philosophe_2(void) {
+TACHE tache_philosophe2(void) {
   comportement_philosophe(2);
   fin_tache();
 }
 
-TACHE tache_philosophe_3(void) {
+TACHE tache_philosophe3(void) {
   comportement_philosophe(3);
   fin_tache();
 }
 
-TACHE tache_philosophe_4(void) {
+TACHE tache_philosophe4(void) {
   comportement_philosophe(4);
   fin_tache();
 }
@@ -94,9 +94,13 @@ void comportement_philosophe(int id_philosophe) {
     printf("======> Philosophe %d est affame.\n", id_philosophe);
     if(fourchette_gauche == 0) {
       s_wait(philosophe_gauche->main_droite->mutex);
+      moi->main_gauche = philosophe_gauche->main_droite;
+      philosophe_gauche->main_droite = 0;
     }
     if(fourchette_droite == 0) {
       s_wait(philosophe_droit->main_gauche->mutex);
+      moi->main_droite = philosophe_gauche->main_gauche;
+      philosophe_droit->main_gauche = 0;
     }
 
     printf("======> Philosophe %d mange.\n", id_philosophe);
@@ -114,7 +118,7 @@ void close_semaphores() {
 
   int i;
   for (i = 0; i < NB_PHILOSOPHES; i++) {
-    s_close(fourchettes[i].mutex);
+    s_close(fourchettes[i]->mutex);
   }
 }
 
