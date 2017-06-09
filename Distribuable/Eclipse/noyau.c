@@ -336,7 +336,7 @@ void reveille(uint16_t t) {
 
         p->status = EXEC;
         ajoute(t);
-        schedule();
+        //schedule();
 
         _unlock_();
     }
