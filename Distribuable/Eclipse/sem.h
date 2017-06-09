@@ -18,10 +18,10 @@
 typedef struct {
 	FIFO file;			/* File circulaire des tâches en attente */
 	short valeur ;		/* compteur du sémaphore e(s) */
+	short ocupp;		/* si le semaphore est libre */
 } SEMAPHORE;
 
 SEMAPHORE _sem[MAX_SEM];
-short _sem_libre[MAX_SEM];
 
 void s_init();
 short s_cree(short v);

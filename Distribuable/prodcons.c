@@ -39,10 +39,17 @@ TACHE Producteur(void) {
   puts("------> DEBUT tache Producteur");
   while(1) {
     push_fifo(&fifo, 1);
-    if (size_fifo(&fifo) == MAX_FILE)
-      dort();
-    if (size_fifo(&fifo) == 1)
-      reveille(Cons);
+    puts("-- Prod -- Production");
+    if (size_fifo(&fifo) == MAX_FIFO)
+    {
+        puts("-- Prod -- Sleep");
+     	dort();
+    }
+    if (size_fifo(&fifo) >= 1)
+    {
+        puts("-- Prod -- Reveille Cons");
+    	reveille(Cons);
+    }
   }
   fin_tache();
 }
@@ -53,10 +60,17 @@ TACHE Consommateur(void) {
   puts("------> DEBUT tache Consommateur");
   while(1) {
     pop_fifo(&fifo);
+    puts("-- Cons -- Consommation");
     if(size_fifo(&fifo) == 0)
+    {
+      puts("-- Cons -- Sleep");
       dort();
-    if(size_fifo(&fifo) == MAX_FILE - 1)
+    }
+    if(size_fifo(&fifo) <= MAX_FIFO - 1)
+    {
+      puts("-- Cons -- Reveille Prod");
       reveille(Prod);
+    }
   }
   fin_tache();
 }

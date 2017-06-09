@@ -11,26 +11,29 @@ void s_init()
 {
 	for (int i = 0; i < MAX_SEM; ++i)
 	{
-		_sem_libre[i] == 1;
+		_sem[i].ocupp = 0;
 	}
 }
 
 short s_cree(short v)
 {
 	short i = 0;
-	while(i < MAX_SEM || _sem_libre[i] == 0) ++i;
+	while(i < MAX_SEM && _sem[i].ocupp == 1) ++i;
 	if(i < MAX_SEM)
 	{
 		init_fifo(&_sem[i].file);
 		_sem[i].valeur = v;
-		_sem_libre[i] = 0;
+		_sem[i].ocupp = 1;
 	}
 	return i;
 }
 
 void s_close(short n)
 {
-	_sem_libre[n] = 1;
+	if(_sem[n].ocupp == 1)
+	{
+		_sem[n].ocupp = 0;
+	}
 }
 
 void s_wait(short n)

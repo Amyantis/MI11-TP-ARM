@@ -1,18 +1,18 @@
-/* NOYAUTEST.C */
+/* PRODCONS_PIPE.C */
 /*--------------------------------------------------------------------------*
- *			      Programme de tests			    *
+ *			      Programme de tests							      	    *
  *--------------------------------------------------------------------------*/
 
 #include "serialio.h"
 #include "noyau.h"
-#include "fifo.h"
+#include "pipe.h"
 
 /*
  ** Test du noyau preemptif. Lier noyautes.c avec noyau.c et noyaufil.c
  */
 
 /* Création de la file du producteur/consommateur */
-FIFO fifo;
+unsigned pipe;
 
 /* Création des tâches */
 TACHE launch(void);
@@ -24,53 +24,32 @@ uint16_t Cons;
 
 TACHE launch(void) {
   puts("------> EXEC tache launch");
-  init_fifo(&fifo);
+  p_init();
 
   Prod = cree(Producteur);
   Cons = cree(Consommateur);
+  pipe = p_open(Prod, Cons);
   active(Prod);
   active(Cons);
   fin_tache();
 }
 
 TACHE Producteur(void) {
-  int i = 0;
-  long j;
   puts("------> DEBUT tache Producteur");
+  char a = '1';
   while(1) {
-    push_fifo(&fifo, 1);
+    p_write(pipe, &a, 1);
     puts("-- Prod -- Production");
-    if (size_fifo(&fifo) == MAX_FIFO)
-    {
-        puts("-- Prod -- Sleep");
-     	dort();
-    }
-    if (size_fifo(&fifo) >= 1)
-    {
-        puts("-- Prod -- Reveille Cons");
-    	reveille(Cons);
-    }
   }
   fin_tache();
 }
 
 TACHE Consommateur(void) {
-  int i = 0;
-  long j;
   puts("------> DEBUT tache Consommateur");
+  char a = ' ';
   while(1) {
-    pop_fifo(&fifo);
+    p_read(pipe, &a, 1);
     puts("-- Cons -- Consommation");
-    if(size_fifo(&fifo) == 0)
-    {
-      puts("-- Cons -- Sleep");
-      dort();
-    }
-    if(size_fifo(&fifo) <= MAX_FIFO - 1)
-    {
-      puts("-- Cons -- Reveille Prod");
-      reveille(Prod);
-    }
   }
   fin_tache();
 }

@@ -42,7 +42,7 @@ unsigned p_open(unsigned redacteur, unsigned lecteur)
 	while(_pipe[p].ocupp == 1 && p < MAX_PIPES) ++p;
 	if(p == MAX_PIPES) return MAX_PIPES;
 
-	__lock__();
+	_lock_();
 
 	// Initialiser le tube
 	_pipe[p].pr_w = redacteur;
@@ -54,7 +54,7 @@ unsigned p_open(unsigned redacteur, unsigned lecteur)
 	_pipe[p].size = 0;
 	_pipe[p].ocupp = 1;
 
-	__unlock__();
+	_unlock_();
 
 	// retour le numéro du pipe
 	return p;
@@ -64,13 +64,11 @@ void p_close (unsigned conduit)
 {
 	if(_pipe[conduit].ocupp == 1)
 	{
-		__lock__();
 		_pipe[conduit].ocupp = 0;
-		__unlock__();
 	}
 }
 
-void p_read (unsigned conduit, uchar* donnees, unsigned nb)
+void p_read (unsigned conduit, char* donnees, unsigned nb)
 {
 	if(_pipe[conduit].ocupp == 1 && _pipe[conduit].pr_r == _tache_c)
 	{
@@ -83,15 +81,13 @@ void p_read (unsigned conduit, uchar* donnees, unsigned nb)
 				_pipe[conduit].sleep_r = 1;
 				dort();
 			}
-			else
-			{
-				__lock__():
-				donnees[i] = _pipe[conduit].tube[_pipe[conduit].is];
-				_pipe[conduit].is = (_pipe[conduit].is + 1) % SIZE_PIPE;
-				_pipe[conduit].size = _pipe[conduit].size - 1;
-				__unlock__();
-			}
 			
+			_lock_();
+			donnees[i] = _pipe[conduit].tube[_pipe[conduit].is];
+			_pipe[conduit].is = (_pipe[conduit].is + 1) % SIZE_PIPE;
+			_pipe[conduit].size = _pipe[conduit].size - 1;
+			_unlock_();
+
 			if(_pipe[conduit].size != SIZE_PIPE && _pipe[conduit].sleep_w == 1)
 			{
 				_pipe[conduit].sleep_w = 0;
@@ -101,7 +97,7 @@ void p_read (unsigned conduit, uchar* donnees, unsigned nb)
 	}
 }
 
-void p_write(unsigned conduit, uchar* donnees, unsigned nb)
+void p_write(unsigned conduit, char* donnees, unsigned nb)
 {
 	if(_pipe[conduit].ocupp == 1 && _pipe[conduit].pr_w == _tache_c)
 	{
@@ -114,14 +110,12 @@ void p_write(unsigned conduit, uchar* donnees, unsigned nb)
 				_pipe[conduit].sleep_w = 1;
 				dort();
 			}
-			else
-			{
-				__lock__():
-				_pipe[conduit].tube[_pipe[conduit].ie] = donnees[i];
-				_pipe[conduit].ie = (_pipe[conduit].ie + 1) % SIZE_PIPE;
-				_pipe[conduit].size = _pipe[conduit].size + 1;
-				__unlock__();
-			}
+
+			_lock_();
+			_pipe[conduit].tube[_pipe[conduit].ie] = donnees[i];
+			_pipe[conduit].ie = (_pipe[conduit].ie + 1) % SIZE_PIPE;
+			_pipe[conduit].size = _pipe[conduit].size + 1;
+			_unlock_();
 
 			if(_pipe[conduit].size != 0 && _pipe[conduit].sleep_r == 1)
 			{

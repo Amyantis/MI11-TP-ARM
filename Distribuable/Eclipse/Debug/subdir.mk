@@ -4,11 +4,14 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../fifo.c \
 ../imx_serial.c \
 ../noyau.c \
 ../noyaufil.c \
-../serialio.c \
-../testfile.c 
+../pipe.c \
+../prodcons_pipe.c \
+../sem.c \
+../serialio.c 
 
 S_UPPER_SRCS += \
 ../crt0.S \
@@ -16,19 +19,25 @@ S_UPPER_SRCS += \
 
 OBJS += \
 ./crt0.o \
+./fifo.o \
 ./imx_serial.o \
 ./lowlevel_init.o \
 ./noyau.o \
 ./noyaufil.o \
-./serialio.o \
-./testfile.o 
+./pipe.o \
+./prodcons_pipe.o \
+./sem.o \
+./serialio.o 
 
 C_DEPS += \
+./fifo.d \
 ./imx_serial.d \
 ./noyau.d \
 ./noyaufil.d \
-./serialio.d \
-./testfile.d 
+./pipe.d \
+./prodcons_pipe.d \
+./sem.d \
+./serialio.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
