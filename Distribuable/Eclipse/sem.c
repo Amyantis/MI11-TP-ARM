@@ -47,18 +47,16 @@ void s_wait(short n)
 	_lock_();
 
 	// Se bloque sur le sémaphore ou décrémente la valeur
-
 	if(_sem[n].valeur <= 0)
 	{
 		push_fifo(&_sem[n].file, _tache_c);
-		_unlock_();
 		dort();
 	}
 	else
 	{
 		_sem[n].valeur = _sem[n].valeur - 1;
-		_unlock_();
 	}
+	_unlock_();
 }
 
 // Libération du sémaphore
