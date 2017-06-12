@@ -3,7 +3,15 @@ Des trucs
 \end{abstract}
 
 \section{Le dîner des philosophes}
-Pour toi théophile ;)
+Le problème bien connu du dîner des philosophes nous a permis de mettre à profit notre travail réalisé pour mettre en place les sémaphore (voir \ref{sec:semaphores}).
+
+Nous avons utilisé les structures de données suivantes pour représenter le problème:
+\lstinputlisting[language=C, caption="Le dîner des philosophes - structures", firstline=16, lastline=26]{../Distribuable/DinerPhilosophes.c}
+Une fourchette est simplement représentée par un mutex, c'est-à-dire un sémaphore agissant comme une porte fermée si une tâche est en section critique, ouverte sinon. Chaque philosophe garde l'adresse de deux fourchettes, une dites à gauche, l'autre à droite.
+
+Le comportement d'un philosophe est défini de la manière suivante:
+\lstinputlisting[language=C, caption="Le dîner des philosophes - comportement d'un philosophe", firstline=72, lastline=108]{../Distribuable/DinerPhilosophes.c}
+A chaque fois qu'un philosophe veut manger, il appelle la primitive \textit{s\_wait}, autrement dit la primitive P, sur le mutex de sa fourchette gauche et le mutex de sa fourchette droite. Une fois entrée dans les deux sections critiques associées à la fourchette gauche et à la fourchette droite, la tâche associée au philosophe peut lancer l'activité de "manger". Une fois cette activité terminée, la primitive V est appellée par cette tâche, via la fonction \textit{s\_signal} pour libérer les deux mutex.
 
 \section{Communication par tubes}
 Les tubes sont des moyens de communication entre deux tâches. Le tube est exclusivement réservé aux deux tâches indiquées lors de sa création.
@@ -11,13 +19,13 @@ Le tube est un canal de communication unidirectionnel. L'une des deux tâches pe
 
 \subsection{Structure de données}
 La structure du tube ressemble à celle d'une FIFO circulaire. Plusieurs informations supplémentaires viennent cependant compléter la structure dont notamment les tâches propriétaires du tube et un booléen afin de savoir si une tâche est endormie sur le tube.
-\lstinputlisting[language=C, caption="Structure du pipe", firstline=16, lastline=23]{../Distribuable//pipe.h}
+\lstinputlisting[language=C, caption="Structure du pipe", firstline=16, lastline=23]{../Distribuable/pipe.h}
 
 \subsection{Lecture et écriture}
 La FIFO circulaire est de taille fixe dans le noyau. Il se peut alors que la tâche qui écrit des données remplisse la file auquel cas elle s'endormira.
 De la même manière, si la tâche qui lit les données n'a plus de données à lire, elle s'endormira jusqu'à ce que de nouvelles données soient à consommer.
 C'est le pipe qui implémente les mécanismes qui endorment et réveillent les tâches.
-\lstinputlisting[language=C, caption="Ecriture dans un tube", firstline=111, lastline=145]{../Distribuable//pipe.c}
+\lstinputlisting[language=C, caption="Ecriture dans un tube", firstline=111, lastline=145]{../Distribuable/pipe.c}
 Il est possible d'écrire plusieurs données dans le pipe lors du même appel à la fonction write. La fonction itérative copie les données une par une dans le pipe. Si le pipe est plein, la tâche s'endort. Si après une écriture, il s'avère que le lecteur est endormi sur le pipe, alors on le réveille.
 La fonction de lecture des données fonctionne de manière analogue.
-\lstinputlisting[language=C, caption="Ecriture dans un tube", firstline=75, lastline=109]{../Distribuable//pipe.c}
+\lstinputlisting[language=C, caption="Ecriture dans un tube", firstline=75, lastline=109]{../Distribuable/pipe.c}

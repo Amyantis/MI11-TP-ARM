@@ -82,3 +82,6 @@ dkms.conf
 
 cmake-build-debug
 .idea
+
+*.tex.bak
+.idea/workspace.xml

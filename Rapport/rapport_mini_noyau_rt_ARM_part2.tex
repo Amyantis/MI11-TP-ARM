@@ -8,11 +8,11 @@ Une autre fonction sera quand à elle capable de réveiller une tâche et de la
 
 \subsection{Endormir la tâche courante}
 Pour endormir une tâche d'une telle manière, nous allons la retirer de la file d'attente du scheduler. Avant cela, nous entrons dans une section critique à l'aide de la primitive $lock()$. L'état de la tâche devient $SUSP$ pour les différencier avec les tâches en cours d'exécution ($EXEC$). Enfin on lance un appel à $schedule()$ pour forcer un changement de tâche immédiatement dès que tous les appels de $\_unlock\_()$ seront dépilés.
-\lstinputlisting[language=C, caption=Dort(), firstline=309, lastline=324]{../Distribuable//noyau.c}
+\lstinputlisting[language=C, caption=Dort(), firstline=309, lastline=324]{../Distribuable/noyau.c}
 
 \subsection{Réveille une tâche}
 Cette fonction réveille une tâche. Elle ajoute ainsi la tâche à la liste du scheduler si et seulement si la tâche est suspendue. Le statut de la tâche redevient bien évidemment l'état $EXEC$.
-\lstinputlisting[language=C, caption=Reveille(), firstline=337, lastline=356]{../Distribuable//noyau.c}
+\lstinputlisting[language=C, caption=Reveille(), firstline=337, lastline=356]{../Distribuable/noyau.c}
 
 \subsection{Programme Producteur/Consommateur}
 Afin de tester les fonctions écrites ci-dessus, nous écrivons un simple programme producteur/consommateur. Les deux tâches partagent la même ressource : une FIFO circulaire que l'un remplit et l'autre vide.
@@ -20,16 +20,16 @@ Il faut bien évidemment endormir le consommateur si il y a famine. Mais il faut
 Bien entendu, le producteur va réveiller le consommateur quand des données seront à consommer dans la FIFO. Inversement, le consommateur va réveiller le producteur si la FIFO n'est plus remplie.
 L'inconvénient de cette méthode est que les appels à $dort()$ et $reveille()$ sont à gérer "manuellement" et augmenter le nombre de producteurs et consommateurs complexifie grandement le problème.
 
-\section{Les sémaphores}
+\section{Les sémaphores} \label{sec:semaphores}
 Les sémaphores sont des outils logiciels, inventés par Djikstra, permettant de synchroniser des tâches et à partager des ressources. Le sémaphore est initialisé avec une valeur positive ou nulle. Lorsqu'une tâche tente d'accéder à la ressource, elle décrémente la valeur du sémaphore. Si cette valeur est nulle, alors la ressource est bloquée et la tâche doit attendre d'être réveillée.
 Lorsqu'une tâche libère une ressource, alors elle incrémente la valeur du sémaphore, ce qui débloque immédiatement l'accès à un processus bloqué.
 
 \subsection{Implémentation du sémaphore}
 Dans sa structure, le sémaphore doit gérer la file des processus qui sont bloqués pour ainsi réveiller les tâches automatiquement lorsque la ressource devient à nouveau disponible.
-\lstinputlisting[language=C, caption=sem.h, firstline=18, lastline=23]{../Distribuable//sem.h}
+\lstinputlisting[language=C, caption=sem.h, firstline=18, lastline=23]{../Distribuable/sem.h}
 
 Voici l'implémentation des fonction $s\_wait()$ et $s\_signal$. Ces fonctions nécessitent d'être placées dans une section critique du noyau afin d'éviter tout changement de contexte pendant un accès au sémaphore.
-\lstinputlisting[language=C, caption=sem.c, firstline=44, lastline=83]{../Distribuable//sem.c}
+\lstinputlisting[language=C, caption=sem.c, firstline=44, lastline=83]{../Distribuable/sem.c}
 
 Notez bien que dans cette implémentation, lorsqu'une tâche libère le sémaphore alors que d'autres sont bloquées, la valeur du sémaphore n'est pas incrémentée puisque une tâche débloquée ne décrémente pas le sémaphore non plus.
 
