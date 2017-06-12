@@ -1,16 +1,16 @@
-\begin{abstract}
-Des trucs
-\end{abstract}
+%\begin{abstract}
+%Des trucs
+%\end{abstract}
 
 \section{Le dîner des philosophes}
 Le problème bien connu du dîner des philosophes nous a permis de mettre à profit notre travail réalisé pour mettre en place les sémaphore (voir \ref{sec:semaphores}).
 
 Nous avons utilisé les structures de données suivantes pour représenter le problème:
-\lstinputlisting[language=C, caption="Le dîner des philosophes - structures", firstline=16, lastline=26]{../Distribuable/DinerPhilosophes.c}
+\lstinputlisting[language=C, caption="Le diner des philosophes - structures", firstline=16, lastline=26]{../Distribuable/DinerPhilosophes.c}
 Une fourchette est simplement représentée par un mutex, c'est-à-dire un sémaphore agissant comme une porte fermée si une tâche est en section critique, ouverte sinon. Chaque philosophe garde l'adresse de deux fourchettes, une dites à gauche, l'autre à droite.
 
 Le comportement d'un philosophe est défini de la manière suivante:
-\lstinputlisting[language=C, caption="Le dîner des philosophes - comportement d'un philosophe", firstline=72, lastline=108]{../Distribuable/DinerPhilosophes.c}
+\lstinputlisting[language=C, caption="Le diner des philosophes - comportement d'un philosophe", firstline=72, lastline=108]{../Distribuable/DinerPhilosophes.c}
 A chaque fois qu'un philosophe veut manger, il appelle la primitive \textit{s\_wait}, autrement dit la primitive P, sur le mutex de sa fourchette gauche et le mutex de sa fourchette droite. Une fois entrée dans les deux sections critiques associées à la fourchette gauche et à la fourchette droite, la tâche associée au philosophe peut lancer l'activité de "manger". Une fois cette activité terminée, la primitive V est appellée par cette tâche, via la fonction \textit{s\_signal} pour libérer les deux mutex.
 
 \section{Communication par tubes}
