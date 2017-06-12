@@ -1,60 +1,3 @@
-\documentclass{article}
-\usepackage[utf8]{inputenc}
-\usepackage[francais]{babel}
-\usepackage[T1]{fontenc}
-
-\usepackage[hmarginratio=1:1,top=32mm,columnsep=15pt]{geometry}
-\usepackage{multicol}
-\geometry{margin=2.5cm}
-
-\usepackage{fancyhdr}
-
-\pagestyle{fancy}
-\fancyhf{}
-\rhead{TP MI11 - Réalisation d’un mini noyau temps réel ARM}
-\lhead{Théophile DANCOISNE et Louis FRERET}
-\rfoot{Page \thepage}
-
-\usepackage{listingsutf8}
-\usepackage{color}
-
-\definecolor{codegreen}{rgb}{0,0.6,0}
-\definecolor{codegray}{rgb}{0.5,0.5,0.5}
-\definecolor{codepurple}{rgb}{0.58,0,0.82}
-\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
-
-\lstdefinestyle{mystyle}{
-    backgroundcolor=\color{backcolour},
-    commentstyle=\color{codegreen},
-    keywordstyle=\color{magenta},
-    numberstyle=\tiny\color{codegray},
-    stringstyle=\color{codepurple},
-    basicstyle=\footnotesize,
-    breakatwhitespace=false,
-    breaklines=true,
-    captionpos=b,
-    keepspaces=true,
-    numbers=left,
-    numbersep=5pt,
-    showspaces=false,
-    showstringspaces=false,
-    showtabs=false,
-    tabsize=4,
-}
-
-\lstset{
-    style=mystyle,
-    inputencoding=utf8/latin1
-}
-
-\title{TP MI11 - Réalisation d’un mini noyau temps réel ARM - Parties 3 et 4}
-\author{Théophile DANCOISNE et Louis FRERET}
-\date{Mai 2017}
-
-\begin{document}
-
-\maketitle
-
 \begin{abstract}
 Les différentes tâches peuvent partager des ressources. Afin de gérer l'accès aux ressources et éviter d'éventuels interblocages, nous allons implémenter dans le noyau des mécanismes d'exclusion mutuelle permettant aux programmes de s'approprier une ressource et d'en interdire l'accès à toute autre tâche.
 \end{abstract}
@@ -65,11 +8,11 @@ Une autre fonction sera quand à elle capable de réveiller une tâche et de la
 
 \subsection{Endormir la tâche courante}
 Pour endormir une tâche d'une telle manière, nous allons la retirer de la file d'attente du scheduler. Avant cela, nous entrons dans une section critique à l'aide de la primitive $lock()$. L'état de la tâche devient $SUSP$ pour les différencier avec les tâches en cours d'exécution ($EXEC$). Enfin on lance un appel à $schedule()$ pour forcer un changement de tâche immédiatement dès que tous les appels de $\_unlock\_()$ seront dépilés.
-\lstinputlisting[language=C, caption=Dort(), firstline=309, lastline=324]{../Distribuable/Eclipse/noyau.c}
+\lstinputlisting[language=C, caption=Dort(), firstline=309, lastline=324]{../Distribuable//noyau.c}
 
 \subsection{Réveille une tâche}
 Cette fonction réveille une tâche. Elle ajoute ainsi la tâche à la liste du scheduler si et seulement si la tâche est suspendue. Le statut de la tâche redevient bien évidemment l'état $EXEC$.
-\lstinputlisting[language=C, caption=Reveille(), firstline=337, lastline=356]{../Distribuable/Eclipse/noyau.c}
+\lstinputlisting[language=C, caption=Reveille(), firstline=337, lastline=356]{../Distribuable//noyau.c}
 
 \subsection{Programme Producteur/Consommateur}
 Afin de tester les fonctions écrites ci-dessus, nous écrivons un simple programme producteur/consommateur. Les deux tâches partagent la même ressource : une FIFO circulaire que l'un remplit et l'autre vide.
@@ -83,10 +26,10 @@ Lorsqu'une tâche libère une ressource, alors elle incrémente la valeur du sé
 
 \subsection{Implémentation du sémaphore}
 Dans sa structure, le sémaphore doit gérer la file des processus qui sont bloqués pour ainsi réveiller les tâches automatiquement lorsque la ressource devient à nouveau disponible.
-\lstinputlisting[language=C, caption=sem.h, firstline=18, lastline=23]{../Distribuable/Eclipse/sem.h}
+\lstinputlisting[language=C, caption=sem.h, firstline=18, lastline=23]{../Distribuable//sem.h}
 
 Voici l'implémentation des fonction $s\_wait()$ et $s\_signal$. Ces fonctions nécessitent d'être placées dans une section critique du noyau afin d'éviter tout changement de contexte pendant un accès au sémaphore.
-\lstinputlisting[language=C, caption=sem.c, firstline=44, lastline=83]{../Distribuable/Eclipse/sem.c}
+\lstinputlisting[language=C, caption=sem.c, firstline=44, lastline=83]{../Distribuable//sem.c}
 
 Notez bien que dans cette implémentation, lorsqu'une tâche libère le sémaphore alors que d'autres sont bloquées, la valeur du sémaphore n'est pas incrémentée puisque une tâche débloquée ne décrémente pas le sémaphore non plus.
 
@@ -96,5 +39,3 @@ Nous devons créer deux sémaphores. Le premier comptera le nombre de places lib
 Ainsi, un producteur commencera par décrémenter la valeur du premier sémaphore, ajoutera un élément à la FIFO, puis incrémentera la valeur du second sémaphore.
 Le consommateur quant à lui commencera par décrémenter le second sémaphore, retirera un élément de la FIFO, puis incrémentera la valeur du premier sémaphore.
 Avec ce système, nous pouvons créer autant de producteurs et de consommateurs qu'on souhaite sans se soucier des attentes des tâches puisque celles-ci sont gérées par le mécanisme de sémaphores.
-
-\end{document}

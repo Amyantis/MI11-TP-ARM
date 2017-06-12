@@ -119,7 +119,7 @@ typedef struct {
 /**************************************/
 
 typedef struct {
-  TACHE_ADR tache_adr;       /* adresse de debut de la tache */
+  TACHE_ADR tache_adr;      /* adresse de debut de la tache */
   uint16_t status;          /* etat courant de la tache     */
   uint32_t sp_ini;          /* valeur initiale de SP        */
   uint32_t sp_irq;          /* valeur courante de SP        */
@@ -130,7 +130,7 @@ typedef struct {
 
 extern CONTEXTE _contexte[MAX_TACHES];  /* tableau des contextes      */
 extern volatile uint16_t _tache_c;      /* numero de tache courante 	*/
-extern uint32_t _tos;                 /* adresse du sommet de pile	*/
+extern uint32_t _tos;                   /* adresse du sommet de pile	*/
 
 /* Prototype des fonctions */
 /***************************/

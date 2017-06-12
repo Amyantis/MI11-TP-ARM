@@ -81,3 +81,4 @@ dkms.conf
 *.fls
 
 cmake-build-debug
+.idea

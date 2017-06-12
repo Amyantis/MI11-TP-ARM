@@ -7,34 +7,46 @@
 #include "sem.h"
 #include "noyau.h"
 
+// Initialise les sémaphores
 void s_init()
 {
 	for (int i = 0; i < MAX_SEM; ++i)
 	{
-		_sem_libre[i] == 1;
+		_sem[i].ocupp = 0;
 	}
 }
 
-ushort s_cree(short v)
+// Crée un sémaphore avec la valeur v
+short s_cree(short v)
 {
-	ushort i = 0;
-	while(i < MAX_SEM || _sem_libre[i] == 0) ++i;
+	short i = 0;
+	_lock_();
+	while(i < MAX_SEM && _sem[i].ocupp == 1) ++i;
 	if(i < MAX_SEM)
 	{
 		init_fifo(&_sem[i].file);
 		_sem[i].valeur = v;
-		_sem_libre[i] = 0;
+		_sem[i].ocupp = 1;
 	}
+	_unlock_();
 	return i;
 }
 
-void s_close(ushort n)
+// Ferme un le sémaphore n
+void s_close(short n)
 {
-	_sem_libre[n] = 1;
+	if(_sem[n].ocupp == 1)
+	{
+		_sem[n].ocupp = 0;
+	}
 }
 
-void s_wait(ushort n)
+// Requête d'accès au sémaphore
+void s_wait(short n)
 {
+	_lock_();
+
+	// Se bloque sur le sémaphore ou décrémente la valeur
 	if(_sem[n].valeur <= 0)
 	{
 		push_fifo(&_sem[n].file, _tache_c);
@@ -44,10 +56,17 @@ void s_wait(ushort n)
 	{
 		_sem[n].valeur = _sem[n].valeur - 1;
 	}
+	_unlock_();
 }
 
-void s_signal(ushort n)
+// Libération du sémaphore
+void s_signal(short n)
 {
+	_lock_();
+	
+	// Incrémente la valeur
+	// Ou réveille une tâche bloquée
+
 	int i, wokeup = 0;
 	for (i = 0; i < MAX_FIFO; ++i)
 	{
@@ -60,4 +79,5 @@ void s_signal(ushort n)
 		}
 	}
 	if(wokeup == 0) _sem[n].valeur = _sem[n].valeur + 1;
+	_unlock_();
 }

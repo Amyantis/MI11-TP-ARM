@@ -39,17 +39,19 @@ description : ajoute la tache n en fin de pile
 */
 
 void ajoute(uint16_t n) {
+  printf("ajoute(%d)\n", n);
+
+  if (_queue != F_VIDE && _file[n] != F_VIDE) {
+	printf("Error: Tâche déjà existante.\n");
+	return;
+  }
   if (_queue == F_VIDE) {
-    _file[n] = n;
-  }
-
-  if (_file[n] == F_VIDE) {
-    _file[n] = suivant();
-    _file[_queue] = n;
+	  _file[n] = n;
   } else {
-    printf("Error: Tâche déjà existante.");
+	  _file[n] = _file[_queue];
+	  _file[_queue] = n;
   }
-
+  _queue = n;
 }
 
 uint16_t predecesseur(uint16_t t);
@@ -62,8 +64,13 @@ description: sort la tache t de la file. L'ordre de la file n'est pas
 */
 
 void retire(uint16_t t) {
+  printf("retire(%d)\n", t);
   if (_file[t] == F_VIDE) {
-    printf("Error: Tâche inexistante.");
+    printf("Error: Tâche inexistante.\n");
+  }
+
+  if(_queue == t) {
+	  _queue = _file[t];
   }
 
   uint16_t pred_t = predecesseur(t);
@@ -76,11 +83,9 @@ uint16_t predecesseur(uint16_t t) {
   uint16_t pred_t;
   for (int i = 0; i < MAX_TACHES; i++) {
     if (_file[i] == t) {
-      pred_t = i;
-      break;
+	  return i;
     }
   }
-  return pred_t;
 }
 
 /*        recherche du suivant a executer       *
@@ -95,7 +100,9 @@ uint16_t suivant(void) {
     printf("Error: Aucune tâche.");
     return F_VIDE;
   } else {
-    return _file[_queue];
+	uint16_t suivant = _file[_queue];
+	_queue = suivant;
+    return suivant;
   }
 }
 

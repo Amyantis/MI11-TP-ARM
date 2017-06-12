@@ -1,3 +1,5 @@
+# Not working CMakeFile, used only for autocompletion
+
 cmake_minimum_required(VERSION 3.7)
 project(MI11-TP-ARM)
 
@@ -22,12 +24,33 @@ set(CMAKE_C_STANDARD 11)
 #
 #set(CMAKE_EXE_LINKER_FLAGS "-Wl,-gc-sections --specs=nosys.specs -nostdlib -static -nostartfiles")
 
-include_directories(Distribuable)
+#include_directories(Distribuable)
+include_directories(Distribuable/)
 
-set(SOURCE_FILES testfile.c noyau.c
-        Distribuable/imx_serial.c
-#        Distribuable/noyau.c
-        Distribuable/noyaufil.c
-#        Distribuable/noyautes.c
-        Distribuable/serialio.c)
+#set(SOURCE_FILES testfile.c noyau.c
+#        Distribuable/imx_serial.c
+##        Distribuable/noyau.c
+#        Distribuable/noyaufil.c
+##        Distribuable/noyautes.c
+#        Distribuable/serialio.c)
+set(SOURCE_FILES
+        Distribuable//DinerPhilosophes.c
+        Distribuable//fifo.h
+        Distribuable//noyau.h
+        Distribuable//sem.c
+        Distribuable//pipe.h
+        Distribuable//noyau.c
+        Distribuable//sem.h
+        Distribuable//serialio.c
+        Distribuable//noyaufil.c
+        Distribuable//imx_serial.c
+        Distribuable//imx_timers.h
+        Distribuable//fifo.c
+        Distribuable//pipe.c
+        Distribuable//serialio.h
+        Distribuable//imx_aitc.h
+        Distribuable//prodcons.c
+        Distribuable//imx_gpio.h
+        Distribuable//imx_serial.h
+        )
 add_executable(TESTFILE ${SOURCE_FILES})
