@@ -1,10 +1,6 @@
-\begin{abstract}
-Les différentes tâches peuvent partager des ressources. Afin de gérer l'accès aux ressources et éviter d'éventuels interblocages, nous allons implémenter dans le noyau des mécanismes d'exclusion mutuelle permettant aux programmes de s'approprier une ressource et d'en interdire l'accès à toute autre tâche.
-\end{abstract}
-
 \section{Exclusion mutuelle}
+Les différentes tâches peuvent partager des ressources. Afin de gérer l'accès aux ressources et éviter d'éventuels interblocages, nous allons implémenter dans le noyau des mécanismes d'exclusion mutuelle permettant aux programmes de s'approprier une ressource et d'en interdire l'accès à toute autre tâche.
 Les premiers mécanismes que nous allons implémenter concernent l'attente passive. L'attente passive, contrairement à l'attente active, ne consomme pas de ressources processeur.
-Une autre fonction sera quand à elle capable de réveiller une tâche et de la 
 
 \subsection{Endormir la tâche courante}
 Pour endormir une tâche d'une telle manière, nous allons la retirer de la file d'attente du scheduler. Avant cela, nous entrons dans une section critique à l'aide de la primitive $lock()$. L'état de la tâche devient $SUSP$ pour les différencier avec les tâches en cours d'exécution ($EXEC$). Enfin on lance un appel à $schedule()$ pour forcer un changement de tâche immédiatement dès que tous les appels de $\_unlock\_()$ seront dépilés.
