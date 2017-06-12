@@ -74,15 +74,16 @@ void comportement_philosophe(int id_philosophe) {
 
   int nb_repas_necessaire = 30;
 
+  int id_gauche = id_philosophe == NB_PHILOSOPHES - 1 ? 0 : id_philosophe + 1;
+  int id_droit = id_philosophe == 0 ? NB_PHILOSOPHES : id_philosophe - 1;
+
   fourchette *fourchette_gauche = &fourchettes[id_philosophe];
-  fourchette *fourchette_droite = 0;
+  fourchette *fourchette_droite = &fourchettes[id_droit];
+
+  philosophe* philosophe_gauche = &philosophes[id_gauche];
+  philosophe* philosophe_droit = &philosophes[id_droit];
 
   philosophe* moi = &philosophes[id_philosophe];
-
-  philosophe* philosophe_gauche =
-      id_philosophe == 0 ? NB_PHILOSOPHES : id_philosophe - 1;
-  philosophe* philosophe_droit =
-      id_philosophe == NB_PHILOSOPHES - 1 ? 0 : id_philosophe + 1;
 
   int j;
   while (nb_repas_necessaire > 0) {
@@ -92,16 +93,10 @@ void comportement_philosophe(int id_philosophe) {
     for (j = 0; j < 30000L; j++);
 
     printf("======> Philosophe %d est affame.\n", id_philosophe);
-    if(fourchette_gauche == 0) {
-      s_wait(philosophe_gauche->main_droite->mutex);
-      moi->main_gauche = philosophe_gauche->main_droite;
-      philosophe_gauche->main_droite = 0;
-    }
-    if(fourchette_droite == 0) {
-      s_wait(philosophe_droit->main_gauche->mutex);
-      moi->main_droite = philosophe_gauche->main_gauche;
-      philosophe_droit->main_gauche = 0;
-    }
+    /* chaque philosophe partage sa fourchette gauche
+     * avec le philosophe de gauche pour qui c'est la fourchette droite */
+    s_wait(philosophe_gauche->main_droite->mutex);
+    s_wait(philosophe_droit->main_gauche->mutex);
 
     printf("======> Philosophe %d mange.\n", id_philosophe);
     for (j = 0; j < 30000L; j++);
