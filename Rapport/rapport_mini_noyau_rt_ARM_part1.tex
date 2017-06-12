@@ -1,7 +1,7 @@
 \section{Ordonnanceur de tâches}
 Pour commencer notre noyau, nous avons implémenté un ordonnanceur de tâche simple dont nous allons présenter le code. Le rôle de l'ordonnanceur est de gérer l'activité des tâches prêtes ou en exécution.
 
-Rappel: Le contexte d'un processus est correspond à une image des registres du processus à un instant t. En commutant la valeur du pointeur du registre du processeur, on effectue un changement de contexte.
+Rappel: Le contexte d'un processus correspond à une image des registres à un instant t. En commutant la valeur du pointeur du registre du processeur, on effectue un changement de contexte.
 
 \lstinputlisting[language=C, caption=noyaufil.c]{../Distribuable/noyaufil.c}
 L'ordonnancement ainsi implémenté est le plus simple du monde: chaque tâche est exécutée tour à tour sans priorité en respectant l'ordre défini par l'utilisateur.
@@ -17,13 +17,13 @@ A chaque fois que l'on effectue un changement de contexte, il faut désactiver l
 Nous allons à présent décrire les différentes fonctions de l'ordonnanceur, implémentées dans le fichier \textit{noyau.c}. Des primitives dépendant du matériel préalablement définies dans le fichier \textit{noyau.h} ont été utilisées.
 
 \subsection{Sortie du noyau}
-Pour cette procédure, il suffit de désactiver les interruptions en faisant appel à la primitive \textit{\_irq\_disable\_} puis éventuellement d'afficher le nombre d'exécution de chaque tâche. La sortie du noyau déclenche une boucle infinie pour éviter de perdre le contrôle du processeur.
+Pour cette procédure, il suffit de désactiver les interruptions en faisant appel à la primitive \textit{\_irq\_disable\_} puis éventuellement d'afficher le nombre d'exécutions de chaque tâche. La sortie du noyau déclenche une boucle infinie pour éviter de perdre le contrôle du processeur.
 %\lstinputlisting[language=C, caption="noyau.c noyau\_exit", firstline=24, lastline=31]{../Distribuable/noyau.c}
 
 \subsection{Destruction d'une tâche}
-La destruction d'une tâche s'effectue en 3 étapes après avoir préalablement désactiver les interruptions:
+La destruction d'une tâche s'effectue en 3 étapes après avoir préalablement désactivé les interruptions:
 \begin{itemize}
-    \item Changer l'état de la tâche à celui de CREE, c'est à dire connue du noyau avec une pile allouée et un identifiant.
+    \item Changer l'état de la tâche à celui de CREE, c'est-à-dire connue du noyau avec une pile allouée et un identifiant.
     \item Sortir la tâche de la file
     \item Appeler le gestionnaire de tâches (\textit{sheduler}).
 \end{itemize}
@@ -32,7 +32,7 @@ La destruction d'une tâche s'effectue en 3 étapes après avoir préalablement 
 \subsection{Créer une nouvelle tâche}
 Le rôle de cette fonction est "d'allouer un espace dans la pile à la tâche et lui attribue un identifiant, qui est retourné à l’appelant".
 
-Les opération de création du contexte, d'allocation d'une pile et décrémentation du pointeur de pile pour la nouvelle tâche doivent bien entendu être effectués en section critique. Les primitives utilisées à cet effet sont \textit{\_lock\_} et \textit{\_unlock\_}. Si le nombre de tâche est maximal, alors on sort du noyau pour cause de dépassement. Le contexte de la nouvelle tâche est récupéré via un le tableau des contextes. L'initialisation du contexte de la tâche se réalise en affectant l'adresse du sommet de la pile, auquel on accède par la variable \textit{\_tos}, au pointeur de pile initial du contexte (\textit{sp\_init}). Il faut alors bien entendu mettre à jour l'adresse du sommet de la pile en le décrémentant de $PILE\_TACHE + PILE\_IRQ$, c'est-à-dire la taille max de la pile d'une tâche plus la taille max de la pile IRQ par tâche.
+Les opération de création du contexte, d'allocation d'une pile et décrémentation du pointeur de pile pour la nouvelle tâche doivent bien entendu être effectués en section critique. Les primitives utilisées à cet effet sont \textit{\_lock\_} et \textit{\_unlock\_}. Si le nombre de tâche est maximal, alors on sort du noyau pour cause de dépassement. Le contexte de la nouvelle tâche est récupéré via le tableau des contextes. L'initialisation du contexte de la tâche se réalise en affectant l'adresse du sommet de la pile, auquel on accède par la variable \textit{\_tos}, au pointeur de pile initial du contexte (\textit{sp\_init}). Il faut alors bien entendu mettre à jour l'adresse du sommet de la pile en le décrémentant de $PILE\_TACHE + PILE\_IRQ$, c'est-à-dire la taille max de la pile d'une tâche plus la taille max de la pile IRQ par tâche.
 Enfin, il faut mémoriser l'adresse du début de la tâche et changer son état à CREER.
 %\lstinputlisting[language=C, caption="noyau.c cree", firstline=59, lastline=94]{../Distribuable/noyau.c}
 
@@ -40,7 +40,7 @@ Enfin, il faut mémoriser l'adresse du début de la tâche et changer son état 
 Cette fonction place la tâche dans la file des tâches prêtes.
 Un test préalable doit être effectué pour vérifier que la tâche a bien été créée. Si ce n'est pas le cas, on sort du noyau. Si la tâche est bien a l'état CREE, après être entré en section critique, on effectue les 3 opérations suivantes:
 \begin{itemize}
-    \item Changer le statut de la tâche à prêt.
+    \item Changer le statut de la tâche à "prêt".
     \item Ajouter la tâche dans la liste.
     \item Activer une tâche prête en faisant appel au scheduler.
 \end{itemize}
@@ -48,12 +48,12 @@ Un test préalable doit être effectué pour vérifier que la tâche a bien ét�
 
 \subsection{Appel au gestionnaire de tâches}
 L'appel au gestionnaire de tâches s'effectue par l'appel à la fonction \textit{schedule}, qui effectuera un branchement (un saut en assembleur) sur \textit{scheduler}.
-Bien entendu, toute la procédure doit s'exécuter en section critique. Le flag indiquant qu'il faut acquitter le timer est paramétré à "faux". On entre alors en mode IRQ à l'aide de la primitive \textit{\_set\_arm\_mode\_}. Le branchement est alors fait sur le cœur de l'ordonnancement. Une fois son traitement accomplie, on replace en mode système avec \textit{\_set\_arm\_mode\_} puis l'on sort de la section critique.
-Décrivons précisément la communication de contexte. La première étape consiste à mémoriser le contexte de la tâche en cours en sauvegardant le pointeur de pile dans le champ \textit{sq\_irq}. Via la fonction \textit{suivant}, définie précédemment dans \textit{noyaufil.c}, on récupère le numéro de la tâche suivante à exécuter. S'il n'y a plus rien à ordonnancer, on sort du noyau. On incrémente alors le compteur d'activation de la tâche suivante, indiquant le nombre de fois on l'on a commuté sur la tâche. Puis si son statut est à prêt, on charge sont pointeur de pile initial \textit{sp\_ini} et l'on passe en mode système. Via l'opération dans $sp\_ini - PILE\_IRQ$, on charge le pointeur de pile courant en mode système. On change alors le statut de la tâche à EXEC, c'est-à-dire en possession du processeur. On autorise alors les interruptions et on lance la tâche. On restaure alors le contexte complet depuis la pile IRQ.
+Bien entendu, toute la procédure doit s'exécuter en section critique. Le flag indiquant qu'il faut acquitter le timer est paramétré à "faux". On entre alors en mode IRQ à l'aide de la primitive \textit{\_set\_arm\_mode\_}. Le branchement est alors fait sur le cœur de l'ordonnancement. Une fois son traitement accompli, on repace en mode système avec \textit{\_set\_arm\_mode\_} puis l'on sort de la section critique.
+Décrivons précisément la commutation de contexte. La première étape consiste à mémoriser le contexte de la tâche en cours en sauvegardant le pointeur de pile dans le champ \textit{sq\_irq}. Via la fonction \textit{suivant}, définie précédemment dans \textit{noyaufil.c}, on récupère le numéro de la tâche suivante à exécuter. S'il n'y a plus rien à ordonnancer, on sort du noyau. On incrémente alors le compteur d'activation de la tâche suivante, indiquant le nombre de fois où l'on a commuté sur la tâche. Puis si son statut est à prêt, on charge son pointeur de pile initial \textit{sp\_ini} et l'on passe en mode système. Via l'opération dans $sp\_ini - PILE\_IRQ$, on charge le pointeur de pile courant en mode système. On change alors le statut de la tâche à EXEC, c'est-à-dire en possession du processeur. On autorise alors les interruptions et on lance la tâche. On restaure alors le contexte complet depuis la pile IRQ.
 %\lstinputlisting[language=C, caption="noyau.c scheduler", firstline=136, lastline=213]{../Distribuable/noyau.c}
 %\lstinputlisting[language=C, caption="noyau.c schedule", firstline=222, lastline=245]{../Distribuable/noyau.c}
 
 \subsection{Démarrer le noyau et commencer une première tâche}
 Cette fonction "initialise les structures de données du noyau, met en place le gestionnaire d’interruption scheduler" et "crée et active la première tâche, dont l’adresse est passée en paramètres".
-La première étape consiste en l'initialisation de l'état des tâches, en paramétrant l'état des tâches à NCREE. On initialise ensuite la tâche courante ainsi que la file, par un appel à \textit{file\_init}. L'adresse du sommet de la pile, \textit{\_tos} est ensuite initialisée à la valeur de sp, c'est-à-dire de la pile. En mode IRQ, on paramètre \textit{sp\_irq} à \textit{\_tos}; et l'on repasse en mode système. Après avoir désactivé les interruptions, on initialise le timer, de type \textit{imx\_timer} à $100Hz$: tcmp, la fréquence de l'ordonnanceur, est ainsi paramétrée à $10000$. On créé alors une première tâche et on l'active.
+La première étape consiste à initialiser l'état des tâches à NCREE. On initialise ensuite la tâche courante ainsi que la file, par un appel à \textit{file\_init}. L'adresse du sommet de la pile, \textit{\_tos} est ensuite initialisée à la valeur de sp, c'est-à-dire de la pile. En mode IRQ, on paramètre \textit{sp\_irq} à \textit{\_tos}; et l'on repasse en mode système. Après avoir désactivé les interruptions, on initialise le timer, de type \textit{imx\_timer} à $100Hz$: tcmp, la fréquence de l'ordonnanceur, est ainsi paramétrée à $10000$. On crée alors une première tâche et on l'active.
 %\lstinputlisting[language=C, caption="noyau.c start", firstline=257, lastline=296]{../Distribuable/noyau.c}

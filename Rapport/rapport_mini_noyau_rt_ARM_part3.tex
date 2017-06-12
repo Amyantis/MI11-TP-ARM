@@ -7,7 +7,7 @@ Le problème bien connu du dîner des philosophes nous a permis de mettre à pro
 
 Nous avons utilisé les structures de données suivantes pour représenter le problème:
 \lstinputlisting[language=C, caption="Le diner des philosophes - structures", firstline=16, lastline=26]{../Distribuable/DinerPhilosophes.c}
-Une fourchette est simplement représentée par un mutex, c'est-à-dire un sémaphore agissant comme une porte fermée si une tâche est en section critique, ouverte sinon. Chaque philosophe garde l'adresse de deux fourchettes, une dites à gauche, l'autre à droite.
+Une fourchette est simplement représentée par un mutex, c'est-à-dire un sémaphore agissant comme une porte fermée si une tâche est en section critique, ouverte sinon. Chaque philosophe garde l'adresse de deux fourchettes, une dites "à gauche", l'autre "à droite".
 
 Le comportement d'un philosophe est défini de la manière suivante:
 \lstinputlisting[language=C, caption="Le diner des philosophes - comportement d'un philosophe", firstline=72, lastline=108]{../Distribuable/DinerPhilosophes.c}
